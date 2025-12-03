@@ -78,40 +78,48 @@ arcium build
 
 ## Testing
 
-Run the test suite:
+### Run Tests on Localnet
 
 ```bash
 arcium test
 ```
 
-Or use the Anchor test command:
+### Run Tests on Devnet
+
+Set environment variables and run tests:
 
 ```bash
-yarn test
+export ANCHOR_PROVIDER_URL="YOUR_RPC_URL" && \
+export ANCHOR_WALLET=~/.config/solana/id.json && \
+export ARCIUM_CLUSTER_OFFSET=768109697 && \
+yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts
 ```
+
+Replace `YOUR_RPC_URL` with your Solana RPC endpoint.
 
 ## Deployment
 
 ### 1. Initialize Computation Definition
 
-First, initialize the MPC computation definition:
+Initialize the MPC computation definition with environment variables:
 
 ```bash
-ts-node init-comp-def-final.ts
+ANCHOR_PROVIDER_URL="YOUR_RPC_URL" ANCHOR_WALLET=~/.config/solana/id.json ARCIUM_CLUSTER_OFFSET=768109697 \
+  npx ts-node init-comp-def-final.ts
 ```
+
+Replace `YOUR_RPC_URL` with your Solana RPC endpoint (devnet or mainnet-beta).
 
 ### 2. Deploy to Arcium Network
 
-Deploy using the Arcium CLI with your cluster offset and RPC URL:
+Deploy using the Arcium CLI:
 
 ```bash
 arcium deploy --cluster-offset 768109697 --keypair-path ~/.config/solana/id.json --rpc-url "YOUR_RPC_URL"
 ```
 
-Replace `YOUR_RPC_URL` with your Solana RPC endpoint (e.g., devnet, mainnet-beta).
-
 **Parameters:**
-- `--cluster-offset`: Your Arcium cluster offset identifier
+- `--cluster-offset`: Your Arcium cluster offset identifier (768109697)
 - `--keypair-path`: Path to your Solana wallet keypair
 - `--rpc-url`: Solana RPC endpoint URL
 
