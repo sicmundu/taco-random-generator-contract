@@ -1,0 +1,42 @@
+# Anchor
+.anchor
+target
+**/*.rs.bk
+test-ledger
+
+# Arcium
+encrypted-ixs/arcis_temp_target
+encrypted-ixs/src/main.rs
+build
+artifacts/
+
+# Node
+node_modules
+.yarn
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Build outputs
+dist/
+*.log
+
+# Solana
+.so
+test-ledger/
