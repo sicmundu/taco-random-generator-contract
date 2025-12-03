@@ -99,18 +99,7 @@ Replace `YOUR_RPC_URL` with your Solana RPC endpoint.
 
 ## Deployment
 
-### 1. Initialize Computation Definition
-
-Initialize the MPC computation definition with environment variables:
-
-```bash
-ANCHOR_PROVIDER_URL="YOUR_RPC_URL" ANCHOR_WALLET=~/.config/solana/id.json ARCIUM_CLUSTER_OFFSET=768109697 \
-  npx ts-node init-comp-def-final.ts
-```
-
-Replace `YOUR_RPC_URL` with your Solana RPC endpoint (devnet or mainnet-beta).
-
-### 2. Deploy to Arcium Network
+### 1. Deploy to Arcium Network
 
 Deploy using the Arcium CLI:
 
@@ -122,6 +111,17 @@ arcium deploy --cluster-offset 768109697 --keypair-path ~/.config/solana/id.json
 - `--cluster-offset`: Your Arcium cluster offset identifier (768109697)
 - `--keypair-path`: Path to your Solana wallet keypair
 - `--rpc-url`: Solana RPC endpoint URL
+
+### 2. Initialize Computation Definition
+
+After deployment, initialize the MPC computation definition with environment variables:
+
+```bash
+ANCHOR_PROVIDER_URL="YOUR_RPC_URL" ANCHOR_WALLET=~/.config/solana/id.json ARCIUM_CLUSTER_OFFSET=768109697 \
+  npx ts-node init-comp-def-final.ts
+```
+
+Replace `YOUR_RPC_URL` with your Solana RPC endpoint (devnet or mainnet-beta).
 
 ## Usage Example
 
