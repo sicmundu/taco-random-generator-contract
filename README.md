@@ -28,36 +28,15 @@ Traditional random number generation has fundamental trust issues:
 
 The random generation flow:
 
-1. **Initialize Computation**: Set up the MPC computation definition with the offchain circuit
-2. **Request Random Number**: User specifies min and max range boundaries
-3. **Distributed Computation**: Arcium nodes collectively generate randomness using MPC
-4. **Result Callback**: Random number is returned and emitted as an event
+1. **Deploy Contract**: Deploy the smart contract to Solana
+2. **Initialize Computation**: Set up the MPC computation definition with the offchain circuit
+3. **Request Random Number**: User specifies min and max range boundaries
+4. **Distributed Computation**: Arcium nodes collectively generate randomness using MPC
+5. **Result Callback**: Random number is returned and emitted as an event
 
-## Technical Implementation
+## Getting Started
 
-### Program Structure
-
-```
-programs/randomizer/
-  └── src/
-      └── lib.rs          # Main smart contract logic
-```
-
-### Key Components
-
-- **`init_generate_random_comp_def`**: Initializes the MPC computation definition
-- **`generate_random`**: Queues a random number generation request
-- **`generate_random_callback`**: Handles the MPC computation result
-- **`GenerateRandomEvent`**: Event emitted with the generated random number
-
-### MPC Circuit
-
-The offchain MPC circuit is stored on Supabase and processes the random generation logic in a privacy-preserving manner.
-
-## Setup & Installation
-
-
-### Quick Install (Recommended)
+### 1. Install Arcium CLI
 
 On Mac and Linux, run this single command to install Arcium:
 
@@ -65,21 +44,36 @@ On Mac and Linux, run this single command to install Arcium:
 curl --proto '=https' --tlsv1.2 -sSfL https://install.arcium.com/ | bash
 ```
 
-### Prerequisites
+### 2. Prerequisites
+
+Make sure you have the following installed:
 
 - Rust 1.75+
 - Solana CLI 1.18+
 - Anchor 0.32.1
 - Node.js 18+ / Yarn
-- Arcium CLI
+- Arcium CLI (installed in step 1)
 
-### Install Dependencies
+### 3. Install Project Dependencies
 
 ```bash
 yarn install
 ```
 
-### Build the Program
+### 4. Configure Program ID
+
+Generate a new program ID and sync it with your project:
+
+```bash
+arcium keys sync
+```
+
+This command will automatically:
+- Generate a new program keypair
+- Update `declare_id!()` in `programs/randomizer/src/lib.rs`
+- Update the program ID in `Anchor.toml`
+
+### 5. Build the Program
 
 ```bash
 arcium build
@@ -87,15 +81,17 @@ arcium build
 
 ## Testing
 
-### Run Tests on Localnet
+### Localnet Testing
+
+Run tests on localnet (no configuration needed):
 
 ```bash
 arcium test
 ```
 
-### Run Tests on Devnet
+### Devnet Testing
 
-Set environment variables and run tests:
+For testing on devnet, set the required environment variables:
 
 ```bash
 export ANCHOR_PROVIDER_URL="YOUR_RPC_URL" && \
@@ -104,33 +100,33 @@ export ARCIUM_CLUSTER_OFFSET=768109697 && \
 yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts
 ```
 
-Replace `YOUR_RPC_URL` with your Solana RPC endpoint.
+Replace `YOUR_RPC_URL` with your Solana devnet RPC endpoint.
 
-## Deployment
+## Deployment to Devnet/Mainnet
 
-### 1. Deploy to Arcium Network
+### Step 1: Deploy the Program
 
-Deploy using the Arcium CLI:
+Deploy your program to the Arcium network:
 
 ```bash
 arcium deploy --cluster-offset 768109697 --keypair-path ~/.config/solana/id.json --rpc-url "YOUR_RPC_URL"
 ```
 
 **Parameters:**
-- `--cluster-offset`: Your Arcium cluster offset identifier (768109697)
+- `--cluster-offset`: Your Arcium cluster offset (768109697)
 - `--keypair-path`: Path to your Solana wallet keypair
-- `--rpc-url`: Solana RPC endpoint URL
+- `--rpc-url`: Solana RPC endpoint (devnet or mainnet-beta)
 
-### 2. Initialize Computation Definition
+### Step 2: Initialize Computation Definition
 
-After deployment, initialize the MPC computation definition with environment variables:
+After successful deployment, initialize the MPC computation definition:
 
 ```bash
 ANCHOR_PROVIDER_URL="YOUR_RPC_URL" ANCHOR_WALLET=~/.config/solana/id.json ARCIUM_CLUSTER_OFFSET=768109697 \
   npx ts-node init-comp-def-final.ts
 ```
 
-Replace `YOUR_RPC_URL` with your Solana RPC endpoint (devnet or mainnet-beta).
+This sets up the MPC environment for generating secure randomness.
 
 ## Usage Example
 
@@ -166,24 +162,29 @@ const listener = program.addEventListener(
 );
 ```
 
-## Configuration
+## Technical Implementation
 
-### Program ID
+### Program Structure
 
-Current program ID: `3khnFsWgLNsJoWtpzmhmc8J7ckDJxQu2ibZY58K7ZvRT`
+```
+programs/randomizer/
+  └── src/
+      └── lib.rs          # Main smart contract logic
+```
 
-To change the program ID, update:
-- `declare_id!()` in `programs/randomizer/src/lib.rs`
-- Program mapping in `Anchor.toml`
+### Key Components
 
-### MPC Circuit URL
+- **`init_generate_random_comp_def`**: Initializes the MPC computation definition
+- **`generate_random`**: Queues a random number generation request
+- **`generate_random_callback`**: Handles the MPC computation result
+- **`GenerateRandomEvent`**: Event emitted with the generated random number
 
-The offchain circuit is hosted at:
+### MPC Circuit
+
+The offchain MPC circuit is hosted on Supabase:
 ```
 https://izromwpjybfzjqbkstqo.supabase.co/storage/v1/object/public/new/generate_random.arcis
 ```
-
-## Architecture
 
 ### Accounts Structure
 
@@ -201,9 +202,7 @@ https://izromwpjybfzjqbkstqo.supabase.co/storage/v1/object/public/new/generate_r
 - Fee pool integration
 - Instruction sysvar validation
 
-## Development
-
-### Project Structure
+## Project Structure
 
 ```
 .
@@ -244,15 +243,15 @@ Arcium's MPC network provides:
 - **Decentralized**: Multiple nodes contribute to entropy generation
 - **Production-Ready**: Battle-tested MPC infrastructure on Solana
 
-## License
-
-This project is licensed under the MIT License.
-
 ## Resources
 
 - [Arcium Documentation](https://docs.arcium.com)
 - [Anchor Framework](https://www.anchor-lang.com)
 - [Solana Documentation](https://docs.solana.com)
+
+## License
+
+This project is licensed under the MIT License.
 
 ## Contributing
 
