@@ -56,6 +56,15 @@ The offchain MPC circuit is stored on Supabase and processes the random generati
 
 ## Setup & Installation
 
+
+### Quick Install (Recommended)
+
+On Mac and Linux, run this single command to install Arcium:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSfL https://install.arcium.com/ | bash
+```
+
 ### Prerequisites
 
 - Rust 1.75+
