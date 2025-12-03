@@ -100,19 +100,20 @@ First, initialize the MPC computation definition:
 ts-node init-comp-def-final.ts
 ```
 
-### 2. Deploy to Localnet
+### 2. Deploy to Arcium Network
+
+Deploy using the Arcium CLI with your cluster offset and RPC URL:
 
 ```bash
-anchor deploy --provider.cluster localnet
+arcium deploy --cluster-offset 768109697 --keypair-path ~/.config/solana/id.json --rpc-url "YOUR_RPC_URL"
 ```
 
-### 3. Deploy to Devnet/Mainnet
+Replace `YOUR_RPC_URL` with your Solana RPC endpoint (e.g., devnet, mainnet-beta).
 
-Update `Anchor.toml` cluster configuration and deploy:
-
-```bash
-anchor deploy --provider.cluster devnet
-```
+**Parameters:**
+- `--cluster-offset`: Your Arcium cluster offset identifier
+- `--keypair-path`: Path to your Solana wallet keypair
+- `--rpc-url`: Solana RPC endpoint URL
 
 ## Usage Example
 
