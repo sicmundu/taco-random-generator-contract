@@ -79,8 +79,7 @@ arcium keys sync
 `arcium keys sync` does not create a keypair—it reads the existing one and rewrites the program ID in:
 - `declare_id!()` in `programs/randomizer/src/lib.rs`
 - `Anchor.toml`
-
-If you need a new keypair, generate it first (for example, `solana-keygen new -o target/deploy/randomizer-keypair.json`).
+The keypair is created during `arcium build` and stored in `target/deploy/randomizer-keypair.json` (or use your own if you prefer).
 
 ## Testing
 
