@@ -10,7 +10,7 @@ import {
 import { Randomizer } from './target/types/randomizer';
 
 async function finalizeOnly() {
-  console.log('Финализация computation definition...');
+  console.log('Finalizing computation definition...');
 
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
@@ -23,10 +23,10 @@ async function finalizeOnly() {
   const owner = anchor.web3.Keypair.fromSecretKey(
     new Uint8Array(JSON.parse(fs.readFileSync(walletPath, 'utf8')))
   );
-  console.log('Публичный ключ владельца:', owner.publicKey.toString());
+  console.log('Owner public key:', owner.publicKey.toString());
 
   try {
-    console.log('\nФинализация computation definition');
+    console.log('\nFinalizing computation definition');
 
     const offsetUint8Array = getCompDefAccOffset("generate_random");
     const compDefOffset = Buffer.from(offsetUint8Array).readUInt32LE(0);
@@ -40,7 +40,7 @@ async function finalizeOnly() {
 
     if (!compDefAccount) {
       throw new Error(
-        `Computation definition account ${compDefAddress.toBase58()} не найден. Сначала запустите init-comp-def-final.ts`
+        `Computation definition account ${compDefAddress.toBase58()} not found. Run init-comp-def-final.ts first.`
       );
     }
 
@@ -55,17 +55,17 @@ async function finalizeOnly() {
         circuitVariant === 'offChain'
           ? circuitSource.offChain.source
           : undefined;
-      console.log('Финализация пропущена: данная computation definition использует offchain circuit.');
+      console.log('Finalize skipped: this computation definition uses an offchain circuit.');
       if (sourceUrl) {
-        console.log('   URL из аккаунта:', sourceUrl);
+        console.log('   URL from account:', sourceUrl);
       }
       console.log(
-        '   Для offchain circuit финализация не требуется — MXE узлы загрузят схемы по указанному URL.'
+        '   Offchain circuits do not need finalize — MXE nodes fetch the circuit from the provided URL.'
       );
       return;
     }
 
-    console.log('Создание транзакции финализации...');
+    console.log('Building finalize transaction...');
     
     const finalizeTx = await buildFinalizeCompDefTx(
       provider,
@@ -77,17 +77,17 @@ async function finalizeOnly() {
     finalizeTx.recentBlockhash = latestBlockhash.blockhash;
     finalizeTx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight;
 
-    console.log('Подписание и отправка транзакции финализации...');
+    console.log('Signing and sending finalize transaction...');
     finalizeTx.sign(owner);
     const finalizeResult = await provider.sendAndConfirm(finalizeTx);
-    console.log('Транзакция финализации отправлена:', finalizeResult);
-    console.log('Просмотр в Solana Explorer:', `https://explorer.solana.com/tx/${finalizeResult}?cluster=devnet`);
+    console.log('Finalize transaction sent:', finalizeResult);
+    console.log('View in Solana Explorer:', `https://explorer.solana.com/tx/${finalizeResult}?cluster=devnet`);
 
-    console.log('\nУспех: computation definition полностью финализирован.');
+    console.log('\nSuccess: computation definition fully finalized.');
   } catch (error: any) {
-    console.error('Ошибка во время финализации:', error);
+    console.error('Error during finalization:', error);
     if (error.logs) {
-      console.error('Логи транзакции:');
+      console.error('Transaction logs:');
       error.logs.forEach((log: string) => console.error('  ', log));
     }
     process.exit(1);
