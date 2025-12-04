@@ -44,13 +44,9 @@ function shouldSkipPreflight(): boolean {
   return !isLocal;
 }
 
-// Cluster configuration
-// For localnet testing: null (uses ARCIUM_CLUSTER_PUBKEY from env)
-// For devnet/testnet: specific cluster offset
-// Set ARCIUM_CLUSTER_OFFSET environment variable or it will be auto-detected from ANCHOR_PROVIDER_URL
+// Returns cluster offset for devnet/testnet or null for localnet
 function getClusterOffset(): number | null {
   try {
-    // First check if ARCIUM_CLUSTER_OFFSET is explicitly set
     if (process.env.ARCIUM_CLUSTER_OFFSET) {
       const offset = parseInt(process.env.ARCIUM_CLUSTER_OFFSET, 10);
       if (!isNaN(offset)) {
@@ -58,31 +54,21 @@ function getClusterOffset(): number | null {
       }
     }
     
-    // Otherwise, auto-detect from ANCHOR_PROVIDER_URL
     const url = process.env.ANCHOR_PROVIDER_URL || '';
     if (url.includes('devnet') || url.includes('testnet')) {
       return 768109697; // Default devnet cluster offset (must match deployment)
     }
     return null;
   } catch (error) {
-    // Fallback to null if env is not available
     return null;
   }
 }
 
-/**
- * Gets the cluster account address based on configuration.
- * - If CLUSTER_OFFSET is set: Uses getClusterAccAddress (devnet/testnet)
- * - If null: Uses getArciumEnv().arciumClusterPubkey (localnet)
- * 
- * Note: This function must be called AFTER anchor.setProvider() has been called
- */
 function getClusterAccount(): PublicKey {
   const clusterOffset = getClusterOffset();
   if (clusterOffset !== null) {
     return getClusterAccAddress(clusterOffset);
   } else {
-    // Ensure provider is set before calling getArciumEnv
     const provider = anchor.getProvider();
     if (!provider) {
       throw new Error("Anchor provider must be set before calling getClusterAccount()");
@@ -92,7 +78,6 @@ function getClusterAccount(): PublicKey {
 }
 
 describe("Randomizer", () => {
-  // Configure the client to use the local cluster.
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.Randomizer as Program<Randomizer>;
   const provider = anchor.getProvider();
@@ -115,13 +100,11 @@ describe("Randomizer", () => {
   it("generate random number in range!", async () => {
     const clusterAccount = getClusterAccount();
     const skipPreflight = shouldSkipPreflight();
-    // Use ANCHOR_WALLET from environment if set, otherwise use default
     const walletPath = process.env.ANCHOR_WALLET || `${os.homedir()}/.config/solana/id.json`;
     const owner = readKpJson(walletPath);
     console.log(`Using wallet: ${walletPath}`);
     console.log(`Wallet address: ${owner.publicKey.toString()}`);
 
-    // Wait for MXE to be ready (this also "warms up" the provider)
     const mxePublicKey = await getMXEPublicKeyWithRetry(
       provider as anchor.AnchorProvider,
       program.programId
@@ -129,7 +112,6 @@ describe("Randomizer", () => {
     console.log("MXE x25519 pubkey is", mxePublicKey);
 
     console.log("Initializing generate_random computation definition");
-    // Using offchain circuit from IPFS, so offchainSource=true
     const initGenerateRandomSig = await initGenerateRandomCompDef(
       program,
       owner,
@@ -201,7 +183,6 @@ describe("Randomizer", () => {
     const result = generateRandomEvent.result.toNumber();
     console.log(`Generated random number: ${result}`);
 
-    // Verify that the result is within the specified range
     if (result >= min.toNumber() && result <= max.toNumber()) {
       console.log(
         `Success! Random number ${result} is within range [${min}, ${max}]`
@@ -231,7 +212,6 @@ describe("Randomizer", () => {
 
     console.log("Comp def pda is ", compDefPDA);
 
-    // Check if account already exists
     const provider = anchor.getProvider() as anchor.AnchorProvider;
     const existingAccount = await provider.connection.getAccountInfo(compDefPDA);
     
@@ -253,9 +233,6 @@ describe("Randomizer", () => {
       });
     console.log("Init generate_random computation definition transaction", sig);
 
-    // With offchain circuit, no need to upload circuit locally
-    // The circuit is automatically fetched from IPFS URL specified in the program
-    // However, we still need to finalize the computation definition
     if (!offchainSource && !uploadRawCircuit) {
       const finalizeTx = await buildFinalizeCompDefTx(
         provider as anchor.AnchorProvider,
@@ -271,8 +248,6 @@ describe("Randomizer", () => {
 
       await provider.sendAndConfirm(finalizeTx);
     }
-    // Note: When using offchain circuit (offchainSource=true), 
-    // the circuit is fetched from IPFS automatically, no finalization needed
     return sig;
   }
 });

@@ -4,7 +4,6 @@ use arcium_client::idl::arcium::types::{CircuitSource, OffChainCircuitSource};
 
 const COMP_DEF_OFFSET_GENERATE_RANDOM: u32 = comp_def_offset("generate_random");
 
-// IPFS URL for the offchain circuit
 const CIRCUIT_URL: &str = "https://izromwpjybfzjqbkstqo.supabase.co/storage/v1/object/public/new/generate_random.arcis";
 
 declare_id!("3khnFsWgLNsJoWtpzmhmc8J7ckDJxQu2ibZY58K7ZvRT");
@@ -13,31 +12,21 @@ declare_id!("3khnFsWgLNsJoWtpzmhmc8J7ckDJxQu2ibZY58K7ZvRT");
 pub mod randomizer {
     use super::*;
 
-    /// Initializes the computation definition for the random number generation operation.
-    /// This sets up the MPC environment for generating secure randomness within a specified range.
-    /// Uses an offchain circuit stored on IPFS.
+    /// Initializes the computation definition for random number generation using the offchain circuit.
     pub fn init_generate_random_comp_def(ctx: Context<InitGenerateRandomCompDef>) -> Result<()> {
         init_comp_def(
             ctx.accounts,
             0,
             Some(CircuitSource::OffChain(OffChainCircuitSource {
                 source: CIRCUIT_URL.to_string(),
-                hash: [0; 32], // or actual hash 
+                hash: [0; 32],
             })),
             None,
         )?;
         Ok(())
     }
 
-    /// Generates a random number within the specified range [min, max].
-    ///
-    /// The user specifies the range boundaries (min and max) as plaintext values.
-    /// The MPC computation will generate a cryptographically secure random number
-    /// within this range using distributed entropy generation.
-    ///
-    /// # Arguments
-    /// * `min` - Minimum value of the range (inclusive)
-    /// * `max` - Maximum value of the range (inclusive)
+    /// Queues an MPC request to generate a random number in the range [min, max].
     pub fn generate_random(
         ctx: Context<GenerateRandom>,
         computation_offset: u64,
@@ -63,9 +52,6 @@ pub mod randomizer {
         Ok(())
     }
 
-    /// Handles the result of the random number generation MPC computation.
-    ///
-    /// This callback receives the randomly generated number within the specified range.
     #[arcium_callback(encrypted_ix = "generate_random")]
     pub fn generate_random_callback(
         ctx: Context<GenerateRandomCallback>,
@@ -172,10 +158,8 @@ pub struct InitGenerateRandomCompDef<'info> {
     pub system_program: Program<'info, System>,
 }
 
-/// Event emitted when a random number is generated.
 #[event]
 pub struct GenerateRandomEvent {
-    /// The generated random number within the specified range
     pub result: u64,
 }
 

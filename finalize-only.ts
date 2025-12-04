@@ -10,25 +10,23 @@ import {
 import { Randomizer } from './target/types/randomizer';
 
 async function finalizeOnly() {
-  console.log('🚀 Финализация только computation definition...');
+  console.log('Финализация computation definition...');
 
   const provider = anchor.AnchorProvider.env();
   anchor.setProvider(provider);
 
-  // Используем program ID из workspace (актуальный)
   const program = anchor.workspace.Randomizer as anchor.Program<Randomizer>;
   const programId = program.programId;
-  console.log('📋 Используется program ID:', programId.toString());
+  console.log('Program ID:', programId.toString());
 
   const walletPath = process.env.ANCHOR_WALLET || `${os.homedir()}/.config/solana/id.json`;
   const owner = anchor.web3.Keypair.fromSecretKey(
     new Uint8Array(JSON.parse(fs.readFileSync(walletPath, 'utf8')))
   );
-  console.log('👤 Публичный ключ владельца:', owner.publicKey.toString());
+  console.log('Публичный ключ владельца:', owner.publicKey.toString());
 
   try {
-    // ШАГ: Финализация computation definition
-    console.log('\n=== Финализация computation definition ===');
+    console.log('\nФинализация computation definition');
 
     const offsetUint8Array = getCompDefAccOffset("generate_random");
     const compDefOffset = Buffer.from(offsetUint8Array).readUInt32LE(0);
@@ -57,7 +55,7 @@ async function finalizeOnly() {
         circuitVariant === 'offChain'
           ? circuitSource.offChain.source
           : undefined;
-      console.log('⚠️  Финализация пропущена: данная computation definition использует offchain circuit.');
+      console.log('Финализация пропущена: данная computation definition использует offchain circuit.');
       if (sourceUrl) {
         console.log('   URL из аккаунта:', sourceUrl);
       }
@@ -67,7 +65,7 @@ async function finalizeOnly() {
       return;
     }
 
-    console.log('🔧 Создание транзакции финализации...');
+    console.log('Создание транзакции финализации...');
     
     const finalizeTx = await buildFinalizeCompDefTx(
       provider,
@@ -75,22 +73,21 @@ async function finalizeOnly() {
       programId
     );
 
-    console.log('⏰ Установка последнего blockhash...');
     const latestBlockhash = await provider.connection.getLatestBlockhash();
     finalizeTx.recentBlockhash = latestBlockhash.blockhash;
     finalizeTx.lastValidBlockHeight = latestBlockhash.lastValidBlockHeight;
 
-    console.log('✍️  Подписание и отправка транзакции финализации...');
+    console.log('Подписание и отправка транзакции финализации...');
     finalizeTx.sign(owner);
     const finalizeResult = await provider.sendAndConfirm(finalizeTx);
-    console.log('✅ Транзакция финализации отправлена:', finalizeResult);
+    console.log('Транзакция финализации отправлена:', finalizeResult);
     console.log('Просмотр в Solana Explorer:', `https://explorer.solana.com/tx/${finalizeResult}?cluster=devnet`);
 
-    console.log('\n🎉 УСПЕХ! Computation definition полностью финализирован!');
+    console.log('\nУспех: computation definition полностью финализирован.');
   } catch (error: any) {
-    console.error('❌ Ошибка во время финализации:', error);
+    console.error('Ошибка во время финализации:', error);
     if (error.logs) {
-      console.error('📜 Логи транзакции:');
+      console.error('Логи транзакции:');
       error.logs.forEach((log: string) => console.error('  ', log));
     }
     process.exit(1);
